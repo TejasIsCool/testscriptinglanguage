@@ -87,6 +87,9 @@ class TokenIdentifier:
             
             if self.word == ";":
                 return SemicolonToken(self.line_number) 
+            
+            if self.word == ".":
+                return PunctuationToken(self.word, self.line_number)
         
         # Handling the two length operators
         if not (self.is_comment or self.is_string) and len(self.word) == 2:
@@ -134,17 +137,17 @@ class TokenIdentifier:
             if len(self.word) > 0 and self.word not in self.token_interrupters:
                 
                 if any([interrupters in self.word for interrupters in self.token_interrupters]):
-                    raise Exception(f"Invalid character in identifier: {self.word}! [At line {self.line_number}]")
+                    raise Exception(f"Invalid character in identifier: [{self.word}]! [At line {self.line_number}]")
                 
                 return IdentifierToken(self.word, self.line_number)
         
         # If nothing matched and its end of line, its an error of some kind!
         if char == "\n" and len(self.word) > 1 and not self.is_comment:
-            
+            self.word.replace("\n","")
             if self.is_string:
-                raise Exception(f"Unterminated string: {self.word}! [At line {self.line_number}]")
+                raise Exception(f"Unterminated string: [{self.word}]! [At line {self.line_number}]")
             
-            raise Exception(f"Couldn't understand input: {self.word}! [At line {self.line_number}]")
+            raise Exception(f"Couldn't understand input: [{self.word}]! [At line {self.line_number}]")
         return None
 
 
@@ -154,14 +157,16 @@ def source_to_tokens(input_source: str) -> list[Token]:
     for line_number, line in enumerate(code_lines):
         line+="\n"
         # Now we scan character by character
-        tk_ident = TokenIdentifier(line_number)
-        
-        for i, char in enumerate(line):
-            tk_out = tk_ident.token_detector(char, i, line)
-            if tk_out is not None:
-                token_list.append(tk_out)
+        tk_ident = TokenIdentifier(line_number+1)
+        try:
+            for i, char in enumerate(line):
+                tk_out = tk_ident.token_detector(char, i, line)
+                if tk_out is not None:
+                    token_list.append(tk_out)
 
-                # Resetting vs creating new objets. Idk
-                tk_ident.setup()
-    print(token_list)
-    pass
+                    # Resetting vs creating new objets. Idk
+                    tk_ident.setup()
+        except Exception as e:
+            print(e)
+            exit()
+    return token_list

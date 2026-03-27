@@ -2,7 +2,9 @@
 /- Even this is!
 abc = 12;
 yoooo = "hello''''''";
-nooo = 'yablo""'
+nooo = 'yablo""'.
+
+# Just a while loop
 while (a>=2) {
     abc -= 2;
 }
