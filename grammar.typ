@@ -25,7 +25,8 @@ These are the kind of stuff I want the language to support:
 
 
 #heading("What possible sets of tokens will i accept: ")
-- Comments: "\/\/[anything]\*"
+(I keep forgetting which comment to use, so we will have them all!)
+- Comments: "\/\/[anything]\*" or "--[anything]" or "\#[anything]"
 - String: '  "[anything]\*"          '
 - Equals: "="
 - Add/Sub/Mul/Div/Pow/Mod: "+" | "-" | "\*" | "/" | "^" | "%"
