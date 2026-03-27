@@ -4,7 +4,7 @@ from Token import *
 class TokenIdentifier:
 
     # Token matchup regexes
-    keywords_tokens_map = {"while": "While", "if": "If", "else": "Else"}
+    keywords = ["while", "if", "else"]
     # EOF character for end of file?
 
     token_interrupters = [";", "+", "-", "*", "/", "^", "|", "&", " ", "(", ")", "=", "/", "#","."]
@@ -43,27 +43,49 @@ class TokenIdentifier:
         # Should i add the character to the word, and tokenize it based on the peek character?
         # Or should i add it to the word if it matches certain criterion? (Currently doing this, should do 1 maybe)    
         
+        self.word += char
         
-        if char.isalpha():
-            self.word += char
-            self.potential_number = False
-
-        # Is a keyword
-        if self.potential_keyword and len(self.word) > 0 and char in self.token_interrupters:
-            if self.word not in self.keywords_tokens_map.keys():
-                self.potential_keyword = False
-                # Possibly an identifier
-                pass
-            else:
-                tok = KeywordToken(
-                    self.keywords_tokens_map[self.word], self.line_number)
+        # Now perform checks on what our word is
+        if peek in self.token_interrupters or peek=="":
+            # will not find something like +hello as seperate tokens!
+            
+            
+            # Check if it matches any of the keywords:
+            if self.word in self.keywords:
+                tok = KeywordToken(self.word.capitalize(), self.line_number)
                 return tok
 
-        # Is a number
-        if self.potential_number and not (char.isdigit() or char == "."):
-            numb = float(self.word)
-            tok = LiteralToken('Num', numb, self.line_number)
-            return tok
+            # Checking if it is a number:
+            try:
+                num = float(self.word)
+                tok = LiteralToken('Num', num, self.line_number)
+                return tok
+            except ValueError:
+                pass
+            
+            
+            pass
+        
+        # if char.isalpha():
+        #     self.word += char
+        #     self.potential_number = False
+
+        # Is a keyword
+        # if self.potential_keyword and len(self.word) > 0 and char in self.token_interrupters:
+        #     if self.word not in self.keywords_tokens_map.keys():
+        #         self.potential_keyword = False
+        #         # Possibly an identifier
+        #         pass
+        #     else:
+        #         tok = KeywordToken(
+        #             self.keywords_tokens_map[self.word], self.line_number)
+        #         return tok
+
+        # # Is a number
+        # if self.potential_number and not (char.isdigit() or char == "."):
+        #     numb = float(self.word)
+        #     tok = LiteralToken('Num', numb, self.line_number)
+        #     return tok
 
 
 def source_to_tokens(input_source: str) -> list[Token]:

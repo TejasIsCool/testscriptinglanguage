@@ -1,6 +1,6 @@
 # It is good to store the line numbers and stuff in the tokens
 # For error reporting
-
+# Maybe even store the character index?
 
 class Token:
     """The Base class for all token types"""    
