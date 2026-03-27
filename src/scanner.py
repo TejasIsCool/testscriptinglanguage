@@ -12,7 +12,7 @@ class TokenIdentifier:
     token_interrupters = [
         ";", "+", "-", "*", "/", "^", "|", "&", " ", 
         "(", ")", "=", "/", "#",".", ">", "<",
-        "[", "]", '"'
+        "[", "]", '"', "'", "\n"
     ]
     """If these are just ahead of the character, it means the current word is ending.
     Ie, it should be made into a token"""
@@ -26,6 +26,7 @@ class TokenIdentifier:
         # Maintain these below in dict!
         self.is_comment = False
         self.is_string = False
+        self.string_state = ""
 
     def token_detector(self, char: str, index: int, peek_line: str = "") -> None | Token:
         """Generates a token if it identifies it as one.
@@ -50,13 +51,22 @@ class TokenIdentifier:
         # Or should i add it to the word if it matches certain criterion? (Currently doing this, should do 1 maybe)    
         
         # Will skip till the line end, we support a lot of comments!
-        if char+peek in ["//", "--","/-","-/"] or self.word == "#":
+        if not self.is_string and (char+peek in ["//", "--","/-","-/"] or self.word == "#"):
             self.is_comment = True
+        
+        # We are starting a string
+        if not self.is_comment and (self.word.startswith('"') or self.word.startswith("'")):
+            self.is_string = True
+            self.string_state = self.word[0]
+        
+        if self.is_string and char == self.string_state:
+            tok = LiteralToken("String", self.word[1:], self.line_number)
+            return tok
         
         if char != " ":
             self.word += char
         
-        if not self.is_comment and (self.word in self.token_interrupters):
+        if not (self.is_comment or self.is_string) and (self.word in self.token_interrupters):
             
             if self.word in ["+","-","*","/","^","%","|","&","<",">","|","&"]:
                 # If its a assignment like, like x += 5, then its handled differently
@@ -79,7 +89,7 @@ class TokenIdentifier:
                 return SemicolonToken(self.line_number) 
         
         # Handling the two length operators
-        if not self.is_comment and len(self.word) == 2:
+        if not (self.is_comment or self.is_string) and len(self.word) == 2:
             # not ==, <=, >=, != are binary operators
             # and +=,-=, ..., are assignment
             if self.word[0] in ["+","-","*","/","^","%","|","&","<",">","|","&","!","="]:
@@ -89,8 +99,10 @@ class TokenIdentifier:
                     return OperatorToken(self.word, "Ass", self.line_number)
         
         
+        
+        
         # Now perform checks on what our word is
-        if not self.is_comment and (peek in self.token_interrupters or peek==""):
+        if not (self.is_comment or self.is_string) and (peek in self.token_interrupters or peek==""):
             # will not find something like +hello as seperate tokens!
             
             
@@ -120,7 +132,19 @@ class TokenIdentifier:
             
             # TODO: Check validity
             if len(self.word) > 0 and self.word not in self.token_interrupters:
+                
+                if any([interrupters in self.word for interrupters in self.token_interrupters]):
+                    raise Exception(f"Invalid character in identifier: {self.word}! [At line {self.line_number}]")
+                
                 return IdentifierToken(self.word, self.line_number)
+        
+        # If nothing matched and its end of line, its an error of some kind!
+        if char == "\n" and len(self.word) > 1 and not self.is_comment:
+            
+            if self.is_string:
+                raise Exception(f"Unterminated string: {self.word}! [At line {self.line_number}]")
+            
+            raise Exception(f"Couldn't understand input: {self.word}! [At line {self.line_number}]")
         return None
 
 
@@ -128,8 +152,10 @@ def source_to_tokens(input_source: str) -> list[Token]:
     token_list: list[Token] = []
     code_lines = input_source.splitlines()
     for line_number, line in enumerate(code_lines):
+        line+="\n"
         # Now we scan character by character
         tk_ident = TokenIdentifier(line_number)
+        
         for i, char in enumerate(line):
             tk_out = tk_ident.token_detector(char, i, line)
             if tk_out is not None:

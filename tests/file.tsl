@@ -1,7 +1,10 @@
 // Hello! This is a comment, that is ignored.
 /- Even this is!
 abc = 12;
+yoooo = "hello''''''";
+nooo = 'yablo""'
 while (a>=2) {
     abc -= 2;
 }
 print(abc);
+print("yay");
