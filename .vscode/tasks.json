@@ -1,0 +1,13 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "run-main-with-test",
+      "type": "shell",
+      "command": "python",
+      "args": ["${workspaceFolder}/main.py","${workspaceFolder}/tests/file.tsl"],
+      "group": "build",
+      "presentation": { "reveal": "always" }
+    }
+  ]
+}

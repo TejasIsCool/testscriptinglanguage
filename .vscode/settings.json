@@ -1,0 +1,6 @@
+{
+    "code-runner.executorMap": {
+        "tsl": "python main.py $fullFileName"
+    },
+    "code-runner.customCommand": "python ./main.py ./tests/file.tsl"
+}

@@ -1,13 +1,19 @@
-from Token import *
+from src.Token import *
 
 
 class TokenIdentifier:
 
-    # Token matchup regexes
-    keywords = ["while", "if", "else"]
+    # Token matchups
+    keywords = ["while", "if", "else", "break", "continue"]
+    literals = ["True", "False", "None"]
+    
     # EOF character for end of file?
 
-    token_interrupters = [";", "+", "-", "*", "/", "^", "|", "&", " ", "(", ")", "=", "/", "#","."]
+    token_interrupters = [
+        ";", "+", "-", "*", "/", "^", "|", "&", " ", 
+        "(", ")", "=", "/", "#",".", ">", "<",
+        "[", "]", '"'
+    ]
     """If these are just ahead of the character, it means the current word is ending.
     Ie, it should be made into a token"""
 
@@ -18,8 +24,8 @@ class TokenIdentifier:
     def setup(self) -> None:
         self.word: str = ""
         # Maintain these below in dict!
-        self.potential_keyword = True
-        self.potential_number = False
+        self.is_comment = False
+        self.is_string = False
 
     def token_detector(self, char: str, index: int, peek_line: str = "") -> None | Token:
         """Generates a token if it identifies it as one.
@@ -43,10 +49,48 @@ class TokenIdentifier:
         # Should i add the character to the word, and tokenize it based on the peek character?
         # Or should i add it to the word if it matches certain criterion? (Currently doing this, should do 1 maybe)    
         
-        self.word += char
+        # Will skip till the line end, we support a lot of comments!
+        if char+peek in ["//", "--","/-","-/"] or self.word == "#":
+            self.is_comment = True
+        
+        if char != " ":
+            self.word += char
+        
+        if not self.is_comment and (self.word in self.token_interrupters):
+            
+            if self.word in ["+","-","*","/","^","%","|","&","<",">","|","&"]:
+                # If its a assignment like, like x += 5, then its handled differently
+                if not peek == "=":
+                    tok = OperatorToken(self.word, "Bop", self.line_number)
+                    return tok
+
+            if self.word == "=":
+                if not peek == "=":
+                    return OperatorToken(self.word, "Bop", self.line_number)
+            
+            if self.word == "!":
+                if not peek == "=":
+                    return OperatorToken(self.word, "Uop", self.line_number)
+                
+            if self.word in ["(",")","[","]"]:
+                return PunctuationToken(self.word, self.line_number)
+            
+            if self.word == ";":
+                return SemicolonToken(self.line_number) 
+        
+        # Handling the two length operators
+        if not self.is_comment and len(self.word) == 2:
+            # not ==, <=, >=, != are binary operators
+            # and +=,-=, ..., are assignment
+            if self.word[0] in ["+","-","*","/","^","%","|","&","<",">","|","&","!","="]:
+                if self.word[0] in ["<", ">", "=", "!"]:
+                    return OperatorToken(self.word, "Bop", self.line_number)
+                else:
+                    return OperatorToken(self.word, "Ass", self.line_number)
+        
         
         # Now perform checks on what our word is
-        if peek in self.token_interrupters or peek=="":
+        if not self.is_comment and (peek in self.token_interrupters or peek==""):
             # will not find something like +hello as seperate tokens!
             
             
@@ -63,29 +107,21 @@ class TokenIdentifier:
             except ValueError:
                 pass
             
+            # Check if its a literal of some kind
+            if self.word in self.literals:
+                if self.word == "True" or "False":  
+                    tok = LiteralToken("Bool", True if self.word == "True" else False, self.line_number)
+                else:
+                    tok = LiteralToken("Other", self.word, self.line_number)
+                return tok
             
-            pass
-        
-        # if char.isalpha():
-        #     self.word += char
-        #     self.potential_number = False
-
-        # Is a keyword
-        # if self.potential_keyword and len(self.word) > 0 and char in self.token_interrupters:
-        #     if self.word not in self.keywords_tokens_map.keys():
-        #         self.potential_keyword = False
-        #         # Possibly an identifier
-        #         pass
-        #     else:
-        #         tok = KeywordToken(
-        #             self.keywords_tokens_map[self.word], self.line_number)
-        #         return tok
-
-        # # Is a number
-        # if self.potential_number and not (char.isdigit() or char == "."):
-        #     numb = float(self.word)
-        #     tok = LiteralToken('Num', numb, self.line_number)
-        #     return tok
+            
+            # Else it is an identifier, if its a valid one
+            
+            # TODO: Check validity
+            if len(self.word) > 0 and self.word not in self.token_interrupters:
+                return IdentifierToken(self.word, self.line_number)
+        return None
 
 
 def source_to_tokens(input_source: str) -> list[Token]:
@@ -101,6 +137,5 @@ def source_to_tokens(input_source: str) -> list[Token]:
 
                 # Resetting vs creating new objets. Idk
                 tk_ident.setup()
-
-        pass
+    print(token_list)
     pass

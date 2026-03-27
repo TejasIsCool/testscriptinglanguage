@@ -10,7 +10,7 @@ def get_code() -> str:
     """
     # Arguments of command line
     parser = argparse.ArgumentParser(
-        prog='TCompilerPY',
+        prog='TestScriptLang',
         description='Compiles your program or something idk',
         epilog='And thus be it'
     )

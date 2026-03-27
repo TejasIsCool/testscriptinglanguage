@@ -28,7 +28,7 @@ These are the kind of stuff I want the language to support:
 (I keep forgetting which comment to use, so we will have them all!)
 - Comments: "\/\/[anything]\*" or "--[anything]" or "\#[anything]"
 - String: '  "[anything]\*"          '
-- Equals: "="
+- Assignment: "="
 - Add/Sub/Mul/Div/Pow/Mod: "+" | "-" | "\*" | "/" | "^" | "%"
 - If: "if"
 - Else: "else"
@@ -40,7 +40,10 @@ These are the kind of stuff I want the language to support:
 - True: "True"
 - False: "False"
 - Or|And: "|" | "&"
+- Inequality: "<", ">", "<=", ">=" -- Also binary operators
+- Equality: "=="
 - Not: "!"
+- Not equality: "!="
 - Semicolon: ";"
 - Numeric: "-?[0..9]\+[\\.[0..9]\*]?"
 - identifier: "[a-z][a-z|\_|0..9|@]"
