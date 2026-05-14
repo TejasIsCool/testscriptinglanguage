@@ -1,0 +1,25 @@
+The code:
+
+
+// Hello! This is a comment, that is ignored.
+/- Even this is!
+abc = 12;
+yoooo = "hello''''''";
+nooo = 'yablo""'.
+
+# Just a while loop
+while (a>=2) {
+    abc -= 2;
+}
+print(abc);
+print("yay");
+
+
+
+Is scanned to
+
+[[Identifier: abc], [Op: = Type: Bop], [Num: 12.0], [Semicolon], [Identifier: yoooo], 
+[Op: = Type: Bop], [String: hello''''''], [Semicolon], [Identifier: nooo], [Op: = Type: Bop], 
+[String: yablo""], [.], [While], [(], [Identifier: a], [Op: >= Type: Bop], [Num: 2.0], [)], 
+[Identifier: {], [Identifier: abc], [Op: -= Type: Ass], [Num: 2.0], [Semicolon], [Identifier: }], 
+[Identifier: print], [(], [Identifier: abc], [)], [Semicolon], [Identifier: print], [(], [String: yay], [)], [Semicolon]]
