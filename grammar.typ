@@ -45,7 +45,7 @@ These are the kind of stuff I want the language to support:
 - Not: "!"
 - Not equality: "!="
 - Semicolon: ";"
-- Numeric: "-?[0..9]\+[\\.[0..9]\*]?"
+- Numeric: "-?[0..9]\+[\\.[0..9]\*]?" - I do want all numbers to be complex tho
 - identifier: "[a-z][a-z|\_|0..9|@]"
 
 How to detect if we have one of those tokens?
@@ -58,3 +58,42 @@ How to detect if we have one of those tokens?
 
 - So instead, we scan the letters, till we get a non letter character. If it matches anything above, that will be made into a token. Else it is an identifier of some kind.
 - For strings and comments however, we will ignore all this process, and make them into a single token. Comments will make the line completely ignored.
+
+
+
+#heading("Parsing grammar")
+#set text(size: 14pt)
+$
+bold("Statement_List") -> {bold("Statement")"*"} \
+bold("Statement") -> cases(
+  bold("Statement_List") & "| decider = {, nonconsumed", 
+  "if" bold("Expression") bold("Statement_List") & "| decider = if",
+  "while" bold("Expression") bold("Statement_List") & "| decider = while",
+  italic("identifier") bold("assignmentExpression")";" & "| decider = "italic("identifier"),
+)\
+bold("assignmentExpression") -> ("=" | "+=" | "-=" | "*=" | "/=" | "^=" | "%=" | "|=" | "&=") bold("Expression")\
+$- 
+The expression block \
+$
+bold("Expression") &-> bold("Equality")\
+bold("Equality") &-> bold("Comparison") (("!= | ==") bold("Comparison"))"*"\
+
+// comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+// term           → factor ( ( "-" | "+" ) factor )* ;
+// factor         → unary ( ( "/" | "*" ) unary )* ;
+// unary          → ( "!" | "-" ) unary
+//                | primary ;
+// primary        → NUMBER | STRING | "true" | "false" | "nil"
+//                | "(" expression ")" ;
+// 
+// Write these commented ones in the above format
+bold("Comparison") &-> bold("Term") (("< | > | <= | >=") bold("Term"))"*"\
+bold("Term") &-> bold("Factor") (("- | +") bold("Factor"))"*"\
+bold("Factor") &-> bold("Unary") (("/ | *") bold("Unary"))"*"\
+bold("Unary") &-> (("! | -") bold("Unary")) | bold("Primary")\
+bold("Primary") &-> cases(
+  "True" | "False" | bold("Number") | bold("String") | bold("Identifier") | "(" bold("Expression") ")"
+)\
+
+
+$

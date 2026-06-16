@@ -12,7 +12,7 @@ class TokenIdentifier:
     token_interrupters = [
         ";", "+", "-", "*", "/", "^", "|", "&", " ", 
         "(", ")", "=", "/", "#",".", ">", "<",
-        "[", "]", '"', "'", "\n"
+        "[", "]", '"', "'", "\n", "{", "}"
     ]
     """If these are just ahead of the character, it means the current word is ending.
     Ie, it should be made into a token"""
@@ -51,24 +51,27 @@ class TokenIdentifier:
         # Or should i add it to the word if it matches certain criterion? (Currently doing this, should do 1 maybe)    
         
         # Will skip till the line end, we support a lot of comments!
-        if not self.is_string and (char+peek in ["//", "--","/-","-/"] or self.word == "#"):
+        # removing support for -/ or /-, as it conflicts with division and subtraction, like 10/-1
+        if not self.is_string and (char+peek in ["//", "--"] or self.word == "#"):
             self.is_comment = True
         
         # We are starting a string
-        if not self.is_comment and (self.word.startswith('"') or self.word.startswith("'")):
+        if not (self.is_comment or self.is_string) and (char == '"' or char == "'"):
             self.is_string = True
-            self.string_state = self.word[0]
+            self.string_state = char
+            # Need to consume the string token ig
+            return None
         
         if self.is_string and char == self.string_state:
-            tok = LiteralToken("String", self.word[1:], self.line_number)
+            tok = LiteralToken("String", self.word, self.line_number)
             return tok
         
-        if char != " ":
+        if char != " " or self.is_string:
             self.word += char
         
         if not (self.is_comment or self.is_string) and (self.word in self.token_interrupters):
             
-            if self.word in ["+","-","*","/","^","%","|","&","<",">","|","&"]:
+            if self.word in ["+","-","*","/","^","%","|","&","<",">"]: # ,"|","&"]:
                 # If its a assignment like, like x += 5, then its handled differently
                 if not peek == "=":
                     tok = OperatorToken(self.word, "Bop", self.line_number)
@@ -82,7 +85,7 @@ class TokenIdentifier:
                 if not peek == "=":
                     return OperatorToken(self.word, "Uop", self.line_number)
                 
-            if self.word in ["(",")","[","]"]:
+            if self.word in ["(",")","[","]","{","}"]:
                 return PunctuationToken(self.word, self.line_number)
             
             if self.word == ";":
@@ -90,12 +93,13 @@ class TokenIdentifier:
             
             if self.word == ".":
                 return PunctuationToken(self.word, self.line_number)
+            
         
         # Handling the two length operators
         if not (self.is_comment or self.is_string) and len(self.word) == 2:
             # not ==, <=, >=, != are binary operators
             # and +=,-=, ..., are assignment
-            if self.word[0] in ["+","-","*","/","^","%","|","&","<",">","|","&","!","="]:
+            if self.word[0] in ["+","-","*","/","^","%","|","&","<",">","!","="]:
                 if self.word[0] in ["<", ">", "=", "!"]:
                     return OperatorToken(self.word, "Bop", self.line_number)
                 else:
@@ -124,7 +128,7 @@ class TokenIdentifier:
             
             # Check if its a literal of some kind
             if self.word in self.literals:
-                if self.word == "True" or "False":  
+                if self.word == "True" or self.word == "False":  
                     tok = LiteralToken("Bool", True if self.word == "True" else False, self.line_number)
                 else:
                     tok = LiteralToken("Other", self.word, self.line_number)
@@ -143,7 +147,7 @@ class TokenIdentifier:
         
         # If nothing matched and its end of line, its an error of some kind!
         if char == "\n" and len(self.word) > 1 and not self.is_comment:
-            self.word.replace("\n","")
+            # self.word = self.word.replace("\n","")
             if self.is_string:
                 raise Exception(f"Unterminated string: [{self.word}]! [At line {self.line_number}]")
             

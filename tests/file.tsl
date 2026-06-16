@@ -1,8 +1,8 @@
 // Hello! This is a comment, that is ignored.
-/- Even this is!
+#Even this is!
 abc = 12;
 yoooo = "hello''''''";
-nooo = 'yablo""'.
+nooo = 'test""'.
 
 # Just a while loop
 while (a>=2) {
@@ -10,3 +10,5 @@ while (a>=2) {
 }
 print(abc);
 print("yay");
+x = 4;
+x %= 2;

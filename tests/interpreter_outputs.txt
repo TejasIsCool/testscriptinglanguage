@@ -5,7 +5,7 @@ The code:
 /- Even this is!
 abc = 12;
 yoooo = "hello''''''";
-nooo = 'yablo""'.
+nooo = 'test""'.
 
 # Just a while loop
 while (a>=2) {
@@ -20,6 +20,6 @@ Is scanned to
 
 [[Identifier: abc], [Op: = Type: Bop], [Num: 12.0], [Semicolon], [Identifier: yoooo], 
 [Op: = Type: Bop], [String: hello''''''], [Semicolon], [Identifier: nooo], [Op: = Type: Bop], 
-[String: yablo""], [.], [While], [(], [Identifier: a], [Op: >= Type: Bop], [Num: 2.0], [)], 
-[Identifier: {], [Identifier: abc], [Op: -= Type: Ass], [Num: 2.0], [Semicolon], [Identifier: }], 
-[Identifier: print], [(], [Identifier: abc], [)], [Semicolon], [Identifier: print], [(], [String: yay], [)], [Semicolon]]
+[String: test""], [.], [While], [(], [Identifier: a], [Op: >= Type: Bop], [Num: 2.0], [)], [{], 
+[Identifier: abc], [Op: -= Type: Ass], [Num: 2.0], [Semicolon], [}], [Identifier: print], [(], 
+[Identifier: abc], [)], [Semicolon], [Identifier: print], [(], [String: yay], [)], [Semicolon]]
