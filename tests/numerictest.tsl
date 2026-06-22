@@ -1,0 +1,7 @@
+12
+2.718281828
+14i
+14.1i
+12+3.18i
+
+// Expected output: [[Number: 12.0], [Number: 2.718281828], [Number: 14.0i], [Number: 14.1i], [Number: 12.0], [Op: + Type: Bop], [Number: 3.18i]]

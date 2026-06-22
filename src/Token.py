@@ -1,7 +1,7 @@
 # It is good to store the line numbers and stuff in the tokens
 # For error reporting
 # Maybe even store the character index?
-
+from src.helpers import Complex
 class Token:
     """The Base class for all token types"""    
     def __init__(self, name: str, line_number: int) -> None:
@@ -9,10 +9,10 @@ class Token:
         self.line_number = line_number
 
     def __str__(self) -> str:
-        return "["+self.name+"]"
+        return self.name
 
     def __repr__(self) -> str:
-        return self.__str__()
+        return f"[{self.name}]"
 
 class IdentifierToken(Token):
     def __init__(self, id_name: str, line_number: int) -> None:
@@ -20,6 +20,9 @@ class IdentifierToken(Token):
         self.id_name = id_name
         
     def __str__(self) -> str:
+        return f"{self.id_name}"
+    
+    def __repr__(self) -> str:
         return f"[Identifier: {self.id_name}]"
         
 class KeywordToken(Token):
@@ -27,11 +30,17 @@ class KeywordToken(Token):
         super().__init__(name, line_number)
 
 class LiteralToken(Token):
-    def __init__(self, name: str, value: str|float|bool, line_number: int) -> None:
+    def __init__(self, name: str, value: str|bool|Complex, line_number: int) -> None:
         super().__init__(name, line_number)
         self.value = value
 
     def __str__(self) -> str:
+        val_str = str(self.value)
+        if len(val_str) > 20:
+            val_str = val_str[:17] + "..."
+        return f"{val_str}"    
+    
+    def __repr__(self) -> str:
         val_str = str(self.value)
         if len(val_str) > 20:
             val_str = val_str[:17] + "..."
@@ -50,6 +59,9 @@ class OperatorToken(Token):
         self.tok_type = tok_type
     
     def __str__(self) -> str:
+        return f"{self.name}"
+    
+    def __repr__(self) -> str:
         return f"[Op: {self.name} Type: {self.tok_type}]"
 
 class PunctuationToken(Token):

@@ -10,5 +10,5 @@ while (a>=2) {
 }
 print(abc);
 print("yay");
-x = 4;
+x = 4.31+23i;
 x %= 2;

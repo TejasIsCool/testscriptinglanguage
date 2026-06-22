@@ -1,5 +1,7 @@
-from src.Token import *
+import traceback
 
+from src.Token import *
+from src.helpers import Complex
 
 class TokenIdentifier:
 
@@ -12,7 +14,7 @@ class TokenIdentifier:
     token_interrupters = [
         ";", "+", "-", "*", "/", "^", "|", "&", " ", 
         "(", ")", "=", "/", "#",".", ">", "<",
-        "[", "]", '"', "'", "\n", "{", "}"
+        "[", "]", '"', "'", "\n", "{", "}", "\t"
     ]
     """If these are just ahead of the character, it means the current word is ending.
     Ie, it should be made into a token"""
@@ -26,6 +28,8 @@ class TokenIdentifier:
         # Maintain these below in dict!
         self.is_comment = False
         self.is_string = False
+        self.is_numeric = False
+        self.numeric_data = {"decimal":False,"end":False}
         self.string_state = ""
 
     def token_detector(self, char: str, index: int, peek_line: str = "") -> None | Token:
@@ -44,7 +48,7 @@ class TokenIdentifier:
         # ie, we are not at the last character
         if index + 1 != len(peek_line):
             peek = peek_line[index+1]
-            
+        
             
         # Design decision:
         # Should i add the character to the word, and tokenize it based on the peek character?
@@ -69,7 +73,40 @@ class TokenIdentifier:
         if char != " " or self.is_string:
             self.word += char
         
-        if not (self.is_comment or self.is_string) and (self.word in self.token_interrupters):
+        # Numeric handling
+        if not (self.is_comment or self.is_string or self.is_numeric):
+            if len(self.word) > 0 and self.word[0].isdigit():
+                self.is_numeric = True
+        
+        if self.is_numeric:
+            # Numbers are always complex!
+            # Decimal is allowed
+            if not (peek.isdigit() or peek in [".","i","_"]) or self.numeric_data["end"]:
+                if "i" == self.word[-1]:
+                    return LiteralToken("Number",Complex(0,float(self.word[:-1])),self.line_number)
+                # Normal number tokenization
+                return LiteralToken("Number",Complex(float(self.word)),self.line_number)
+            
+            # we ignore underscores
+            if char == "_":
+                self.word = self.word[:-1]
+            
+            
+            if char == "." and not self.numeric_data["decimal"]:
+                self.numeric_data["decimal"] = True
+
+            # We already have a ., and we get another dot, means our number is ending
+            # Like, 1.23.toString() like idea
+            if peek == "." and self.numeric_data["decimal"]:
+                return LiteralToken("Number",Complex(float(self.word)),self.line_number)
+
+            # We will end scanning after this i
+            if peek == "i":
+                self.numeric_data["end"] = True
+
+        
+        
+        if not (self.is_comment or self.is_string or self.is_numeric) and (self.word in self.token_interrupters):
             
             if self.word in ["+","-","*","/","^","%","|","&","<",">"]: # ,"|","&"]:
                 # If its a assignment like, like x += 5, then its handled differently
@@ -96,7 +133,7 @@ class TokenIdentifier:
             
         
         # Handling the two length operators
-        if not (self.is_comment or self.is_string) and len(self.word) == 2:
+        if not (self.is_comment or self.is_string or self.is_numeric) and len(self.word) == 2:
             # not ==, <=, >=, != are binary operators
             # and +=,-=, ..., are assignment
             if self.word[0] in ["+","-","*","/","^","%","|","&","<",">","!","="]:
@@ -109,7 +146,7 @@ class TokenIdentifier:
         
         
         # Now perform checks on what our word is
-        if not (self.is_comment or self.is_string) and (peek in self.token_interrupters or peek==""):
+        if not (self.is_comment or self.is_string or self.is_numeric) and (peek in self.token_interrupters or peek==""):
             # will not find something like +hello as seperate tokens!
             
             
@@ -117,14 +154,6 @@ class TokenIdentifier:
             if self.word in self.keywords:
                 tok = KeywordToken(self.word.capitalize(), self.line_number)
                 return tok
-
-            # Checking if it is a number:
-            try:
-                num = float(self.word)
-                tok = LiteralToken('Num', num, self.line_number)
-                return tok
-            except ValueError:
-                pass
             
             # Check if its a literal of some kind
             if self.word in self.literals:
@@ -144,6 +173,8 @@ class TokenIdentifier:
                     raise Exception(f"Invalid character in identifier: [{self.word}]! [At line {self.line_number}]")
                 
                 return IdentifierToken(self.word, self.line_number)
+        
+        
         
         # If nothing matched and its end of line, its an error of some kind!
         if char == "\n" and len(self.word) > 1 and not self.is_comment:
@@ -171,6 +202,9 @@ def source_to_tokens(input_source: str) -> list[Token]:
                     # Resetting vs creating new objets. Idk
                     tk_ident.setup()
         except Exception as e:
-            print(e)
+            # Print the error with all the ddetails
+            print(f"Error while scanning line {line_number+1}: {e}")
+            # Print the stack trace too?
+            traceback.print_exc()
             exit()
     return token_list

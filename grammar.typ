@@ -75,7 +75,8 @@ bold("assignmentExpression") -> ("=" | "+=" | "-=" | "*=" | "/=" | "^=" | "%=" |
 $- 
 The expression block \
 $
-bold("Expression") &-> bold("Equality")\
+bold("Expression") &-> bold("Connectors")\
+bold("Connectors") &-> bold("Equality") (("& | |") bold("Equality"))"*"\
 bold("Equality") &-> bold("Comparison") (("!= | ==") bold("Comparison"))"*"\
 
 // comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
@@ -91,9 +92,9 @@ bold("Comparison") &-> bold("Term") (("< | > | <= | >=") bold("Term"))"*"\
 bold("Term") &-> bold("Factor") (("- | +") bold("Factor"))"*"\
 bold("Factor") &-> bold("Unary") (("/ | *") bold("Unary"))"*"\
 bold("Unary") &-> (("! | -") bold("Unary")) | bold("Primary")\
-bold("Primary") &-> cases(
+bold("Primary") &->
   "True" | "False" | bold("Number") | bold("String") | bold("Identifier") | "(" bold("Expression") ")"
-)\
+\
 
 
 $
