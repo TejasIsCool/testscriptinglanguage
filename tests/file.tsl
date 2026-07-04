@@ -2,8 +2,7 @@
 #Even this is!
 abc = 12;
 yoooo = "hello''''''";
-nooo = 'test""'.
-
+nooo = 'test"".'
 # Just a while loop
 while (a>=2) {
     abc -= 2;

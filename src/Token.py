@@ -1,7 +1,7 @@
 # It is good to store the line numbers and stuff in the tokens
 # For error reporting
 # Maybe even store the character index?
-from src.helpers import Complex
+from src.helpers import ComplexNum
 class Token:
     """The Base class for all token types"""    
     def __init__(self, name: str, line_number: int) -> None:
@@ -30,7 +30,7 @@ class KeywordToken(Token):
         super().__init__(name, line_number)
 
 class LiteralToken(Token):
-    def __init__(self, name: str, value: str|bool|Complex, line_number: int) -> None:
+    def __init__(self, name: str, value: str|bool|ComplexNum, line_number: int) -> None:
         super().__init__(name, line_number)
         self.value = value
 
@@ -69,6 +69,6 @@ class PunctuationToken(Token):
         super().__init__(name, line_number)
 
 # Is important punctuation
-class SemicolonToken(PunctuationToken):
+class SemicolonToken(Token):
     def __init__(self, line_number: int) -> None:
         super().__init__("Semicolon", line_number)

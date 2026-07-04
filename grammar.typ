@@ -69,7 +69,9 @@ bold("Statement") -> cases(
   bold("Statement_List") & "| decider = {, nonconsumed", 
   "if" bold("Expression") bold("Statement_List") & "| decider = if",
   "while" bold("Expression") bold("Statement_List") & "| decider = while",
+  "print" bold("Expression")";" & "| decider = print",
   italic("identifier") bold("assignmentExpression")";" & "| decider = "italic("identifier"),
+  bold("Expression")";"
 )\
 bold("assignmentExpression") -> ("=" | "+=" | "-=" | "*=" | "/=" | "^=" | "%=" | "|=" | "&=") bold("Expression")\
 $- 
@@ -98,3 +100,10 @@ bold("Primary") &->
 
 
 $
+
+Optimization ideas:
+- Caching expression results (will need expression structure analysis) - Not good idea
+
+Language ideas:
+- Every statement is an expression, and it can be split into two types of expressions. 1st is ast types, and second is booleanExpressions??
+- Probably not, if i need a conditional (like in if and while conditions), ill just evaluate the ast and see if I get a boolean output

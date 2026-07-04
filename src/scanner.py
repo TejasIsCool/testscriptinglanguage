@@ -1,12 +1,26 @@
-import traceback
+# import traceback
 
 from src.Token import *
-from src.helpers import Complex
+from src.helpers import ComplexNum, Error, ErrorType
+
+
+# Future suggestion:
+# Do not make a fixed character by character scanner
+# Like here, i cannot change the current index
+
+# So instead, later on, make a more dynamic one
+# Like if its a string, then we can just scan till the next string character, 
+# and make the token in one go, instead of character by character and occasionally making token
+# ig thats basically recursive descent, but for scanners
+
+
+# TODO: Store the character index of the token, so we can show it in the error message
+
 
 class TokenIdentifier:
 
     # Token matchups
-    keywords = ["while", "if", "else", "break", "continue"]
+    keywords = ["while", "if", "else", "break", "continue", "print"] # print is temporarily here
     literals = ["True", "False", "None"]
     
     # EOF character for end of file?
@@ -83,9 +97,9 @@ class TokenIdentifier:
             # Decimal is allowed
             if not (peek.isdigit() or peek in [".","i","_"]) or self.numeric_data["end"]:
                 if "i" == self.word[-1]:
-                    return LiteralToken("Number",Complex(0,float(self.word[:-1])),self.line_number)
+                    return LiteralToken("Number",ComplexNum(0,float(self.word[:-1])),self.line_number)
                 # Normal number tokenization
-                return LiteralToken("Number",Complex(float(self.word)),self.line_number)
+                return LiteralToken("Number",ComplexNum(float(self.word)),self.line_number)
             
             # we ignore underscores
             if char == "_":
@@ -98,7 +112,7 @@ class TokenIdentifier:
             # We already have a ., and we get another dot, means our number is ending
             # Like, 1.23.toString() like idea
             if peek == "." and self.numeric_data["decimal"]:
-                return LiteralToken("Number",Complex(float(self.word)),self.line_number)
+                return LiteralToken("Number",ComplexNum(float(self.word)),self.line_number)
 
             # We will end scanning after this i
             if peek == "i":
@@ -152,7 +166,7 @@ class TokenIdentifier:
             
             # Check if it matches any of the keywords:
             if self.word in self.keywords:
-                tok = KeywordToken(self.word.capitalize(), self.line_number)
+                tok = KeywordToken(self.word, self.line_number)
                 return tok
             
             # Check if its a literal of some kind
@@ -170,25 +184,29 @@ class TokenIdentifier:
             if len(self.word) > 0 and self.word not in self.token_interrupters:
                 
                 if any([interrupters in self.word for interrupters in self.token_interrupters]):
-                    raise Exception(f"Invalid character in identifier: [{self.word}]! [At line {self.line_number}]")
+                    raise Error(ErrorType.SynErr,  self.line_number, f"Invalid character in identifier: [{self.word}]!")
                 
                 return IdentifierToken(self.word, self.line_number)
         
         
         
         # If nothing matched and its end of line, its an error of some kind!
-        if char == "\n" and len(self.word) > 1 and not self.is_comment:
+        if char == "\n" and not self.is_comment:
             # self.word = self.word.replace("\n","")
             if self.is_string:
-                raise Exception(f"Unterminated string: [{self.word}]! [At line {self.line_number}]")
+                raise Error(ErrorType.SynErr, self.line_number, f"Unterminated string: [{self.string_state}{self.word[:-1]}]!")
             
-            raise Exception(f"Couldn't understand input: [{self.word}]! [At line {self.line_number}]")
+            if len(self.word) > 1:
+                raise Error(ErrorType.SynErr, self.line_number, f"Couldn't understand input: [{self.word[:-1]}]!")
+        
+
         return None
 
 
-def source_to_tokens(input_source: str) -> list[Token]:
+def source_to_tokens(input_source: str) -> list[Token] | None:
     token_list: list[Token] = []
     code_lines = input_source.splitlines()
+    has_error = False
     for line_number, line in enumerate(code_lines):
         line+="\n"
         # Now we scan character by character
@@ -204,7 +222,10 @@ def source_to_tokens(input_source: str) -> list[Token]:
         except Exception as e:
             # Print the error with all the ddetails
             print(f"Error while scanning line {line_number+1}: {e}")
+            has_error = True
             # Print the stack trace too?
-            traceback.print_exc()
-            exit()
+            # traceback.print_exc()
+            # exit()
+    if has_error:
+        return None
     return token_list

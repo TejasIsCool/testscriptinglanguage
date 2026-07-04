@@ -1,0 +1,16 @@
+print("Hello!");
+print("2+2="+(2+2));
+{
+    print (12+31i);
+    print ("Right associativity: "+3^3^3);
+    print ("Evaluation of True | True | False | True is "+(True | True | False | True));
+    print(2.718281828459045^(3.141592653589793238i));
+    {print("Evaluation of {2+2==4;} is "+{2+2==4;});}
+
+    -- The print inside gets executed before the outer print
+    print( 12 + {24;} + print(12));
+}
+print("Semi colon test");;;;;;
+print(True);
+print(None);
+print("abc"+123+"hij");
