@@ -71,8 +71,15 @@ class ErrorManager:
 
     errors: list[Error] = []
     code_lines: list[str] = []
+    mode: int = 0 # 0 = file, 1 = interactive
     
-    
+    # Change getter for code_lines, to just return the codeline regardless of index accessed if in interactive mode
+    @staticmethod
+    def get_code_line(line_number: int) -> str:
+        if ErrorManager.mode == 1:
+            return "Interactive mode"
+        return ErrorManager.code_lines[line_number-1] if line_number-1 < len(ErrorManager.code_lines) else "Unknown line"
+
     @staticmethod
     def add_error(error: Error):
         ErrorManager.errors.append(error)
@@ -85,7 +92,7 @@ class ErrorManager:
     def print_errors():
         for error in ErrorManager.errors:
             print(f"Error: {error.message}")
-            print(f"Error Line: {ErrorManager.code_lines[error.line_number-1] if error.line_number-1 < len(ErrorManager.code_lines) else 'Unknown line'}")
+            print(f"Error Line: {ErrorManager.get_code_line(error.line_number)}")
 
 
 class Error(Exception):
@@ -93,7 +100,7 @@ class Error(Exception):
     def __init__(self, error_type: ErrorType, line_number: int, message: str, *args: object) -> None:
         self.error_type = error_type
         self.line_number = line_number if line_number != -1 else len(ErrorManager.code_lines)-1 # THe last line!
-        self.message = message +f" [At line {self.line_number}: {ErrorManager.code_lines[line_number-1] if line_number-1 < len(ErrorManager.code_lines) else 'Unknown line'}]"
+        self.message = message +f" [At line {self.line_number}: {ErrorManager.get_code_line(self.line_number)}]"
         ErrorManager.add_error(self)
         super().__init__(self.message, *args)
     pass

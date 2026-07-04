@@ -1,23 +1,26 @@
 import argparse
 
 
-def get_code() -> str:
-    """Has the compiler arguments, and gets the source code
+def get_code() -> tuple[int, str]:
+    """Has the interpreter arguments, and gets the source code
     in the file provided as a string.
 
     Returns:
-        str: The code in string format.
+        tuple[int, str]: A tuple containing the mode and the source code as a string if there is.
     """
     # Arguments of command line
-    parser = argparse.ArgumentParser(
+    cmd_parser = argparse.ArgumentParser(
         prog='TestScriptLang',
-        description='Compiles your program or something idk',
+        description='Interprets your program or something idk',
         epilog='And thus be it'
     )
-    parser.add_argument("filepath")
-    args = parser.parse_args()
-    filepath: str = args.filepath
+    cmd_parser.add_argument("filepath", nargs="?", default=None, help="The path to the file to interpret")
+    args = cmd_parser.parse_args()
+    filepath: str | None = args.filepath
 
-    with open(filepath, "r") as f:
-        text = f.read()
-    return text
+    if filepath is not None:
+        with open(filepath, "r") as f:
+            text = f.read()
+        return 0, text
+    else:
+        return 1, ""
